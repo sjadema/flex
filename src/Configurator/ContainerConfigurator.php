@@ -18,7 +18,7 @@ use Symfony\Flex\Recipe;
  */
 class ContainerConfigurator extends AbstractConfigurator
 {
-    public function configure(Recipe $recipe, $parameters)
+    public function configure(Recipe $recipe, $parameters, array $options = [])
     {
         $this->write('Setting parameters');
         $this->addParameters($parameters);
@@ -27,7 +27,7 @@ class ContainerConfigurator extends AbstractConfigurator
     public function unconfigure(Recipe $recipe, $parameters)
     {
         $this->write('Unsetting parameters');
-        $target = $this->options->expandTargetDir('%CONFIG_DIR%/services.yaml');
+        $target = $this->options->get('root-dir').'/'.$this->options->expandTargetDir('%CONFIG_DIR%/services.yaml');
         $lines = [];
         foreach (file($target) as $line) {
             foreach (array_keys($parameters) as $key) {
@@ -42,7 +42,7 @@ class ContainerConfigurator extends AbstractConfigurator
 
     private function addParameters(array $parameters)
     {
-        $target = $this->options->expandTargetDir('%CONFIG_DIR%/services.yaml');
+        $target = $this->options->get('root-dir').'/'.$this->options->expandTargetDir('%CONFIG_DIR%/services.yaml');
         $endAt = 0;
         $isParameters = false;
         $lines = [];

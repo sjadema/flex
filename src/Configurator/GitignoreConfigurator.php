@@ -18,11 +18,11 @@ use Symfony\Flex\Recipe;
  */
 class GitignoreConfigurator extends AbstractConfigurator
 {
-    public function configure(Recipe $recipe, $vars)
+    public function configure(Recipe $recipe, $vars, array $options = [])
     {
         $this->write('Added entries to .gitignore');
 
-        $gitignore = getcwd().'/.gitignore';
+        $gitignore = $this->options->get('root-dir').'/.gitignore';
         if ($this->isFileMarked($recipe, $gitignore)) {
             return;
         }
@@ -37,7 +37,7 @@ class GitignoreConfigurator extends AbstractConfigurator
 
     public function unconfigure(Recipe $recipe, $vars)
     {
-        $file = getcwd().'/.gitignore';
+        $file = $this->options->get('root-dir').'/.gitignore';
         if (!file_exists($file)) {
             return;
         }

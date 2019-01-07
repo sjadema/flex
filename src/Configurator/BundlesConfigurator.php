@@ -18,7 +18,7 @@ use Symfony\Flex\Recipe;
  */
 class BundlesConfigurator extends AbstractConfigurator
 {
-    public function configure(Recipe $recipe, $bundles)
+    public function configure(Recipe $recipe, $bundles, array $options = [])
     {
         $this->write('Enabling the package as a Symfony bundle');
         $file = $this->getConfFile();
@@ -100,6 +100,6 @@ class BundlesConfigurator extends AbstractConfigurator
 
     private function getConfFile(): string
     {
-        return $this->options->expandTargetDir('%CONFIG_DIR%/bundles.php');
+        return $this->options->get('root-dir').'/'.$this->options->expandTargetDir('%CONFIG_DIR%/bundles.php');
     }
 }

@@ -18,43 +18,43 @@ use Symfony\Flex\Recipe;
  */
 class CopyFromRecipeConfigurator extends AbstractConfigurator
 {
-    public function configure(Recipe $recipe, $config)
+    public function configure(Recipe $recipe, $config, array $options = [])
     {
         $this->write('Setting configuration and copying files');
-        $this->copyFiles($config, $recipe->getFiles(), getcwd());
+        $this->copyFiles($config, $recipe->getFiles(), $this->options->get('root-dir'), $options['force'] ?? false);
     }
 
     public function unconfigure(Recipe $recipe, $config)
     {
         $this->write('Removing configuration and files');
-        $this->removeFiles($config, $recipe->getFiles(), getcwd());
+        $this->removeFiles($config, $recipe->getFiles(), $this->options->get('root-dir'));
     }
 
-    private function copyFiles(array $manifest, array $files, string $to)
+    private function copyFiles(array $manifest, array $files, string $to, bool $overwrite = false)
     {
         foreach ($manifest as $source => $target) {
             $target = $this->options->expandTargetDir($target);
             if ('/' === substr($source, -1)) {
-                $this->copyDir($source, $this->path->concatenate([$to, $target]), $files);
+                $this->copyDir($source, $this->path->concatenate([$to, $target]), $files, $overwrite);
             } else {
-                $this->copyFile($this->path->concatenate([$to, $target]), $files[$source]['contents'], $files[$source]['executable']);
+                $this->copyFile($this->path->concatenate([$to, $target]), $files[$source]['contents'], $files[$source]['executable'], $overwrite);
             }
         }
     }
 
-    private function copyDir(string $source, string $target, array $files)
+    private function copyDir(string $source, string $target, array $files, bool $overwrite = false)
     {
         foreach ($files as $file => $data) {
             if (0 === strpos($file, $source)) {
                 $file = $this->path->concatenate([$target, substr($file, \strlen($source))]);
-                $this->copyFile($file, $data['contents'], $data['executable']);
+                $this->copyFile($file, $data['contents'], $data['executable'], $overwrite);
             }
         }
     }
 
-    private function copyFile(string $to, string $contents, bool $executable)
+    private function copyFile(string $to, string $contents, bool $executable, bool $overwrite = false)
     {
-        if (file_exists($to)) {
+        if (!$this->options->shouldWriteFile($to, $overwrite)) {
             return;
         }
 
@@ -62,7 +62,7 @@ class CopyFromRecipeConfigurator extends AbstractConfigurator
             mkdir(\dirname($to), 0777, true);
         }
 
-        file_put_contents($to, $contents);
+        file_put_contents($to, $this->options->expandTargetDir($contents));
         if ($executable) {
             @chmod($to, fileperms($to) | 0111);
         }

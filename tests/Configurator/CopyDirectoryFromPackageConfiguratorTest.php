@@ -11,8 +11,6 @@
 
 namespace Symfony\Flex\Tests\Configurator;
 
-require_once __DIR__.'/TmpDirMock.php';
-
 use Composer\Composer;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
@@ -57,14 +55,14 @@ class CopyDirectoryFromPackageConfiguratorTest extends TestCase
     {
         parent::setUp();
 
-        $this->sourceDirectory = sys_get_temp_dir().'/package/files';
+        $this->sourceDirectory = FLEX_TEST_DIR.'/package/files';
         $this->sourceFileRelativePath = 'package/files/';
         $this->sourceFiles = [
             $this->sourceDirectory.'/file1',
             $this->sourceDirectory.'/file2',
         ];
 
-        $this->targetDirectory = sys_get_temp_dir().'/public/files';
+        $this->targetDirectory = FLEX_TEST_DIR.'/public/files';
         $this->targetFileRelativePath = 'public/files/';
         $this->targetFiles = [
             $this->targetDirectory.'/file1',
@@ -81,7 +79,7 @@ class CopyDirectoryFromPackageConfiguratorTest extends TestCase
         $installationManager->expects($this->exactly(1))
             ->method('getInstallPath')
             ->with($package)
-            ->willReturn(sys_get_temp_dir())
+            ->willReturn(FLEX_TEST_DIR)
         ;
         $this->composer = $this->getMockBuilder(Composer::class)->getMock();
         $this->composer->expects($this->exactly(1))
@@ -104,13 +102,13 @@ class CopyDirectoryFromPackageConfiguratorTest extends TestCase
 
     private function createConfigurator(): CopyFromPackageConfigurator
     {
-        return new CopyFromPackageConfigurator($this->composer, $this->io, new Options());
+        return new CopyFromPackageConfigurator($this->composer, $this->io, new Options(['root-dir' => FLEX_TEST_DIR]));
     }
 
     private function cleanUpTargetFiles()
     {
-        $this->rrmdir(sys_get_temp_dir().'/package');
-        $this->rrmdir(sys_get_temp_dir().'/public');
+        $this->rrmdir(FLEX_TEST_DIR.'/package');
+        $this->rrmdir(FLEX_TEST_DIR.'/public');
     }
 
     /**

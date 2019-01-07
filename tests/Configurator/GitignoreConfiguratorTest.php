@@ -11,8 +11,6 @@
 
 namespace Symfony\Flex\Tests\Configurator;
 
-require_once __DIR__.'/TmpDirMock.php';
-
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +25,7 @@ class GitignoreConfiguratorTest extends TestCase
         $configurator = new GitignoreConfigurator(
             $this->getMockBuilder(Composer::class)->getMock(),
             $this->getMockBuilder(IOInterface::class)->getMock(),
-            new Options(['public-dir' => 'public'])
+            new Options(['public-dir' => 'public', 'root-dir' => FLEX_TEST_DIR])
         );
 
         $recipe1 = $this->getMockBuilder(Recipe::class)->disableOriginalConstructor()->getMock();
@@ -36,7 +34,7 @@ class GitignoreConfiguratorTest extends TestCase
         $recipe2 = $this->getMockBuilder(Recipe::class)->disableOriginalConstructor()->getMock();
         $recipe2->expects($this->any())->method('getName')->will($this->returnValue('BarBundle'));
 
-        $gitignore = sys_get_temp_dir().'/.gitignore';
+        $gitignore = FLEX_TEST_DIR.'/.gitignore';
         @unlink($gitignore);
         touch($gitignore);
 
