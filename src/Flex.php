@@ -233,6 +233,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
             $app->add(new Command\UnpackCommand($resolver));
             $app->add(new Command\SyncRecipesCommand($this, $this->options->get('root-dir')));
             $app->add(new Command\GenerateIdCommand($this));
+            $app->add(new Command\DumpEnvCommand($this->config, $this->options));
 
             break;
         }
@@ -367,7 +368,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
             switch ($recipe->getJob()) {
                 case 'install':
                     $this->io->writeError(sprintf('  - Configuring %s', $this->formatOrigin($recipe->getOrigin())));
-                    $this->configurator->install($recipe, [
+                    $this->configurator->install($recipe, $this->lock, [
                         'force' => $event instanceof UpdateEvent && $event->force(),
                     ]);
                     $manifest = $recipe->getManifest();
@@ -382,7 +383,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
                     break;
                 case 'uninstall':
                     $this->io->writeError(sprintf('  - Unconfiguring %s', $this->formatOrigin($recipe->getOrigin())));
-                    $this->configurator->unconfigure($recipe);
+                    $this->configurator->unconfigure($recipe, $this->lock);
                     break;
             }
         }
@@ -604,7 +605,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
                 if ($ref && ($locks[$name]['recipe']['ref'] ?? null) === $ref) {
                     continue;
                 }
-                $this->lock->add($name, $locks[$name]);
+                $this->lock->set($name, $locks[$name]);
             } elseif ($operation instanceof UninstallOperation) {
                 if (!$this->lock->has($name)) {
                     continue;
